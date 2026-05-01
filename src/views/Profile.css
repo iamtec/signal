@@ -132,7 +132,53 @@
 .profile-reflections-content {
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 20px;
+  padding: 24px;
+}
+
+/* Override markdown styles for reflections readability */
+
+.profile-reflections-content .md-h2 {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  margin: 32px 0 14px;
+  padding-bottom: 10px;
+}
+
+.profile-reflections-content .md-h2:first-child {
+  margin-top: 0;
+}
+
+.profile-reflections-content .md-h3 {
+  font-size: 13px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text);
+  margin: 20px 0 8px;
+}
+
+.profile-reflections-content .md-p {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text);
+  margin: 10px 0;
+}
+
+.profile-reflections-content .md-list {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.profile-reflections-content .md-list li {
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 6px 0;
+  color: var(--text);
+}
+
+.profile-reflections-content strong {
+  color: var(--amber);
 }
 
 .profile-reflections-empty {
