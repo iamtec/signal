@@ -3,38 +3,25 @@ import { supabase } from '../lib/supabase'
 import Markdown from '../components/Markdown'
 import './Lesson.css'
 
-export default function Lesson({ lessonData, isSaved, onNewSession, onStartOver, onSaved }) {
-  const [saving, setSaving] = useState(false)
-  const [showTitleInput, setShowTitleInput] = useState(false)
-  const [title, setTitle] = useState('')
-  const [saved, setSaved] = useState(isSaved)
+export default function Lesson({ lessonData, onNewSession, onStartOver }) {
+  const [isFavorite, setIsFavorite] = useState(lessonData?.is_favorite || false)
 
-  const handleSave = useCallback(async () => {
-    if (!title.trim()) return
+  const toggleFavorite = useCallback(async () => {
+    if (!lessonData?.id) return
 
-    setSaving(true)
-    try {
-      const { error } = await supabase.from('lessons').insert({
-        title: title.trim(),
-        mode: lessonData.mode,
-        module_ids: lessonData.moduleIds,
-        style_ref: lessonData.styleRef || null,
-        goal: lessonData.goal,
-        content: lessonData.content,
-      })
+    const newVal = !isFavorite
+    setIsFavorite(newVal) // optimistic
 
-      if (error) {
-        console.error('Error saving lesson:', error)
-        return
-      }
+    const { error } = await supabase
+      .from('lessons')
+      .update({ is_favorite: newVal })
+      .eq('id', lessonData.id)
 
-      setSaved(true)
-      setShowTitleInput(false)
-      if (onSaved) onSaved()
-    } finally {
-      setSaving(false)
+    if (error) {
+      console.error('Error toggling favorite:', error)
+      setIsFavorite(!newVal) // revert
     }
-  }, [title, lessonData, onSaved])
+  }, [lessonData, isFavorite])
 
   if (!lessonData) {
     return (
@@ -58,15 +45,30 @@ export default function Lesson({ lessonData, isSaved, onNewSession, onStartOver,
   return (
     <div className="lesson">
       <div className="lesson-meta">
-        <div className="lesson-meta-row">
-          <span className="pill">{lessonData.mode}</span>
-          {lessonData.styleRef && (
-            <span className="lesson-meta-ref">{lessonData.styleRef}</span>
-          )}
-          {formattedDate && (
-            <span className="lesson-meta-date">{formattedDate}</span>
+        <div className="lesson-meta-top">
+          <div className="lesson-meta-row">
+            <span className="pill">{lessonData.mode}</span>
+            {lessonData.styleRef && (
+              <span className="lesson-meta-ref">{lessonData.styleRef}</span>
+            )}
+            {formattedDate && (
+              <span className="lesson-meta-date">{formattedDate}</span>
+            )}
+          </div>
+          {lessonData.id && (
+            <button
+              className={`lesson-fav-btn ${isFavorite ? 'active' : ''}`}
+              onClick={toggleFavorite}
+              title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            >
+              {isFavorite ? '★' : '☆'}
+            </button>
           )}
         </div>
+
+        {lessonData.title && (
+          <span className="lesson-meta-title">{lessonData.title}</span>
+        )}
 
         {lessonData.modules && lessonData.modules.length > 0 && (
           <div className="lesson-meta-modules">
@@ -86,49 +88,6 @@ export default function Lesson({ lessonData, isSaved, onNewSession, onStartOver,
       </div>
 
       <div className="lesson-actions">
-        {!saved && !showTitleInput && (
-          <button
-            className="btn-primary"
-            onClick={() => setShowTitleInput(true)}
-          >
-            Save Lesson
-          </button>
-        )}
-
-        {!saved && showTitleInput && (
-          <div className="lesson-save-row">
-            <input
-              type="text"
-              className="lesson-title-input"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Give this lesson a title"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSave()
-                if (e.key === 'Escape') setShowTitleInput(false)
-              }}
-            />
-            <button
-              className="btn-primary"
-              onClick={handleSave}
-              disabled={saving || !title.trim()}
-            >
-              {saving ? 'Saving...' : 'Save'}
-            </button>
-            <button
-              className="btn-secondary"
-              onClick={() => setShowTitleInput(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-
-        {saved && (
-          <span className="lesson-saved-label">Saved</span>
-        )}
-
         <div className="lesson-nav-actions">
           <button className="btn-secondary" onClick={onNewSession}>
             New Session

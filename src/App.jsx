@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { supabase } from './lib/supabase'
 import Layout from './components/Layout'
 import Library from './views/Library'
 import NewSession from './views/NewSession'
@@ -18,10 +19,26 @@ function getViewFromPath() {
   return ROUTES[path] || 'library'
 }
 
+function generateTitle(goal, mode) {
+  if (goal && goal.trim()) {
+    const trimmed = goal.trim()
+    if (trimmed.length <= 50) return trimmed
+    // Truncate at word boundary
+    const cut = trimmed.slice(0, 50)
+    const lastSpace = cut.lastIndexOf(' ')
+    return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut) + '...'
+  }
+  const date = new Date().toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+  return `${mode.toUpperCase()} session — ${date}`
+}
+
 export default function App() {
   const [currentView, setCurrentView] = useState(getViewFromPath)
   const [lessonData, setLessonData] = useState(null)
-  const [viewLessonData, setViewLessonData] = useState(null)
 
   useEffect(() => {
     const handlePopState = () => {
@@ -39,32 +56,56 @@ export default function App() {
     setCurrentView(view)
   }, [])
 
-  const handleLessonGenerated = useCallback((data) => {
-    setLessonData(data)
+  // Auto-save lesson to Supabase on generation, then show it
+  const handleLessonGenerated = useCallback(async (data) => {
+    const title = generateTitle(data.goal, data.mode)
+
+    // Insert into Supabase
+    const { data: saved, error } = await supabase
+      .from('lessons')
+      .insert({
+        title,
+        mode: data.mode,
+        module_ids: data.moduleIds,
+        style_ref: data.styleRef || null,
+        goal: data.goal,
+        content: data.content,
+        is_favorite: false,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error auto-saving lesson:', error)
+      // Still show the lesson even if save failed
+      setLessonData({ ...data, title, id: null, is_favorite: false })
+    } else {
+      setLessonData({
+        ...data,
+        id: saved.id,
+        title: saved.title,
+        is_favorite: saved.is_favorite,
+        createdAt: saved.created_at,
+      })
+    }
+
     navigate('lesson')
   }, [navigate])
 
   const handleViewSavedLesson = useCallback((lesson) => {
-    setViewLessonData(lesson)
+    setLessonData(lesson)
     navigate('lesson')
   }, [navigate])
 
   const handleNewSession = useCallback(() => {
     setLessonData(null)
-    setViewLessonData(null)
     navigate('session')
   }, [navigate])
 
   const handleStartOver = useCallback(() => {
     setLessonData(null)
-    setViewLessonData(null)
     navigate('library')
   }, [navigate])
-
-  const handleLessonSaved = useCallback(() => {
-    setLessonData(null)
-    setViewLessonData(null)
-  }, [])
 
   const renderView = () => {
     switch (currentView) {
@@ -75,11 +116,9 @@ export default function App() {
       case 'lesson':
         return (
           <Lesson
-            lessonData={viewLessonData || lessonData}
-            isSaved={!!viewLessonData}
+            lessonData={lessonData}
             onNewSession={handleNewSession}
             onStartOver={handleStartOver}
-            onSaved={handleLessonSaved}
           />
         )
       case 'saved':

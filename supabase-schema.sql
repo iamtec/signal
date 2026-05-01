@@ -35,6 +35,7 @@ create table if not exists lessons (
   style_ref text,
   goal text,
   content text,
+  is_favorite boolean not null default false,
   created_at timestamptz default now()
 );
 
