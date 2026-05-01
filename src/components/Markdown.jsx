@@ -28,7 +28,11 @@ function isBlockStart(line) {
 function parseMarkdown(content) {
   if (!content) return ''
 
-  const lines = content.split('\n')
+  // Ensure ## headings always start on their own line
+  // Handles cases where newlines were stripped from stored content
+  let normalized = content.replace(/([^\n])(\s*##\s)/g, '$1\n$2')
+
+  const lines = normalized.split('\n')
   const html = []
   let inCodeBlock = false
   let codeLines = []
