@@ -1,0 +1,257 @@
+.library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.library-header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.library-action-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.library-action-btn:hover {
+  border-color: var(--border2);
+  color: var(--text);
+}
+
+.library-add-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  padding: 8px 16px;
+  transition: background 0.15s;
+}
+
+.library-add-btn:hover {
+  background: var(--amber-dim);
+}
+
+/* Top-level sections container */
+
+.library-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Controllers section */
+
+.library-controllers-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.library-section-label {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+}
+
+/* Rack sections */
+
+.library-racks {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.library-rack-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.library-rack-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.library-rack-info {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.library-rack-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  transition: color 0.15s;
+}
+
+.library-rack-name:hover {
+  color: var(--amber);
+}
+
+.library-rack-name.unassigned-label {
+  color: var(--text3);
+  cursor: default;
+}
+
+.library-rack-name.unassigned-label:hover {
+  color: var(--text3);
+}
+
+.library-rack-hp {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: 0.05em;
+}
+
+.library-rack-desc {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+.library-rack-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.library-rack-action {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.library-rack-action:hover {
+  color: var(--text2);
+  border-color: var(--border2);
+}
+
+/* HP bar */
+
+.library-rack-hp-bar {
+  height: 3px;
+  background: var(--border);
+  width: 100%;
+  overflow: hidden;
+}
+
+.library-rack-hp-fill {
+  height: 100%;
+  background: var(--amber);
+  transition: width 0.3s ease;
+}
+
+.library-rack-empty {
+  font-size: 13px;
+  color: var(--text3);
+  padding: 20px 0;
+}
+
+/* Drag and drop */
+
+.library-rack-section.drop-target {
+  outline: 1px dashed var(--amber);
+  outline-offset: -1px;
+  background: var(--amber-glow);
+  border-radius: 0;
+}
+
+.library-drop-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  padding: 24px 0;
+  text-align: center;
+}
+
+/* Module grid */
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.library-card-wrap {
+  position: relative;
+}
+
+.library-extracting {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--amber);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.library-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--text2);
+}
+
+.library-empty-sub {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 8px;
+}
+
+@media (max-width: 1024px) {
+  .library-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .library-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .library-header-actions {
+    flex-wrap: wrap;
+  }
+}

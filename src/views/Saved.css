@@ -1,0 +1,184 @@
+.saved {
+  max-width: 800px;
+}
+
+.saved-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--text2);
+}
+
+.saved-empty-sub {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 8px;
+}
+
+.saved-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.saved-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.saved-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  width: 100%;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.saved-card-header:hover {
+  background: var(--surface2);
+}
+
+.saved-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.saved-card-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.saved-card-chevron {
+  font-size: 18px;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+.saved-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.saved-card-ref {
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.saved-card-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.05em;
+}
+
+.saved-card-modules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.saved-module-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+/* Expanded body */
+
+.saved-card-body {
+  border-top: 1px solid var(--border);
+  padding: 20px;
+}
+
+.saved-card-content {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.saved-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.saved-delete-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.saved-delete-btn:hover {
+  color: #e25555;
+  border-color: rgba(226, 85, 85, 0.3);
+}
+
+.saved-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.saved-confirm-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.saved-confirm-yes {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e25555;
+  padding: 4px 10px;
+  border: 1px solid rgba(226, 85, 85, 0.3);
+  border-radius: 2px;
+}
+
+.saved-confirm-yes:hover {
+  background: rgba(226, 85, 85, 0.1);
+}
+
+.saved-confirm-no {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 4px 10px;
+}
+
+.saved-confirm-no:hover {
+  color: var(--text2);
+}

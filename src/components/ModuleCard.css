@@ -1,0 +1,131 @@
+.module-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.15s, opacity 0.15s;
+}
+
+.module-card:hover {
+  border-color: var(--border2);
+}
+
+.module-card.selectable {
+  cursor: pointer;
+}
+
+.module-card.selected {
+  border-color: var(--amber);
+  background: var(--amber-glow);
+}
+
+/* Draggable */
+
+.module-card.is-draggable {
+  cursor: grab;
+}
+
+.module-card.is-draggable:active {
+  cursor: grabbing;
+}
+
+.module-card.dragging {
+  opacity: 0.3;
+}
+
+.module-card-grip {
+  position: absolute;
+  top: 8px;
+  left: 6px;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: -2px;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.module-card.is-draggable:hover .module-card-grip {
+  opacity: 1;
+}
+
+/* Controller card variant */
+
+.module-card.is-controller {
+  border-left: 2px solid var(--amber-dim);
+}
+
+.module-card-ext-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  background: var(--amber-dim);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+.module-card-check {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 14px;
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.module-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+}
+
+.module-card-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.module-card-hp {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.05em;
+}
+
+.module-card-mfr {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: 0.05em;
+}
+
+.module-card-cat {
+  margin-top: 2px;
+}
+
+.module-card-notes {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.module-card-delta-indicator {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  font-size: 6px;
+  color: var(--amber);
+}

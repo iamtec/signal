@@ -1,0 +1,130 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* --- Top nav (desktop) --- */
+
+.top-nav {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.top-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.15em;
+  color: var(--text);
+}
+
+.logo:hover {
+  color: var(--amber);
+}
+
+.top-nav-links {
+  display: flex;
+  gap: 4px;
+}
+
+.top-nav-link {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.top-nav-link:hover {
+  color: var(--text);
+}
+
+.top-nav-link.active {
+  color: var(--amber);
+  border-bottom: 1px solid var(--amber);
+}
+
+/* --- Main content --- */
+
+.main-content {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px 24px 100px;
+}
+
+/* --- Bottom tabs (mobile) --- */
+
+.bottom-tabs {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+
+.bottom-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0 8px;
+  color: var(--text3);
+  transition: color 0.15s;
+}
+
+.bottom-tab.active {
+  color: var(--amber);
+}
+
+.bottom-tab-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.bottom-tab-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* --- Responsive --- */
+
+@media (max-width: 768px) {
+  .top-nav-links {
+    display: none;
+  }
+
+  .bottom-tabs {
+    display: flex;
+  }
+
+  .main-content {
+    padding: 20px 16px 80px;
+  }
+}
