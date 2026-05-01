@@ -3,8 +3,9 @@ import { supabase } from '../lib/supabase'
 import Markdown from '../components/Markdown'
 import './Lesson.css'
 
-export default function Lesson({ lessonData, onNewSession, onStartOver }) {
+export default function Lesson({ lessonData, onNewSession, onStartOver, onDelete }) {
   const [isFavorite, setIsFavorite] = useState(lessonData?.is_favorite || false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const toggleFavorite = useCallback(async () => {
     if (!lessonData?.id) return
@@ -96,6 +97,34 @@ export default function Lesson({ lessonData, onNewSession, onStartOver }) {
             Start Over
           </button>
         </div>
+        {lessonData.id && onDelete && (
+          <div className="lesson-delete-area">
+            {confirmDelete ? (
+              <div className="lesson-delete-confirm">
+                <span className="lesson-delete-confirm-text">Delete this lesson?</span>
+                <button
+                  className="lesson-delete-yes"
+                  onClick={() => onDelete(lessonData.id)}
+                >
+                  Delete
+                </button>
+                <button
+                  className="lesson-delete-no"
+                  onClick={() => setConfirmDelete(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                className="lesson-delete-btn"
+                onClick={() => setConfirmDelete(true)}
+              >
+                Delete Lesson
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

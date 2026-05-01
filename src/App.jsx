@@ -105,6 +105,16 @@ export default function App() {
     navigate('library')
   }, [navigate])
 
+  const handleDeleteLesson = useCallback(async (lessonId) => {
+    const { error } = await supabase.from('lessons').delete().eq('id', lessonId)
+    if (error) {
+      console.error('Error deleting lesson:', error)
+      return
+    }
+    setLessonData(null)
+    navigate('saved')
+  }, [navigate])
+
   const renderView = () => {
     switch (currentView) {
       case 'library':
@@ -117,6 +127,7 @@ export default function App() {
             lessonData={lessonData}
             onNewSession={handleNewSession}
             onStartOver={handleStartOver}
+            onDelete={handleDeleteLesson}
           />
         )
       case 'saved':
