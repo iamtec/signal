@@ -139,13 +139,14 @@
 
 .profile-reflections-content .md-h2 {
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: none;
-  color: var(--amber);
-  margin: 32px 0 14px;
-  padding-bottom: 10px;
+  color: var(--text);
+  margin: 28px 0 10px;
+  padding-bottom: 8px;
+  border-bottom-color: var(--border);
 }
 
 .profile-reflections-content .md-h2:first-child {
@@ -182,7 +183,8 @@
 }
 
 .profile-reflections-content strong {
-  color: var(--amber);
+  color: var(--text);
+  font-weight: 700;
 }
 
 .profile-reflections-empty {

@@ -126,8 +126,8 @@ export default function Profile() {
         onStatus: setStatusMsg,
       })
 
-      // Strip cite tags
-      const cleaned = content.replace(/<cite[^>]*>|<\/cite>/g, '').replace(/\s{2,}/g, ' ').trim()
+      // Strip cite tags, but preserve newlines for markdown structure
+      const cleaned = content.replace(/<cite[^>]*>|<\/cite>/g, '').replace(/[^\S\n]{2,}/g, ' ').trim()
 
       // Save reflections to profile
       const { error: updateError } = await supabase
