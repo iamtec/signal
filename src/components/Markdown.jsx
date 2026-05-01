@@ -16,6 +16,15 @@ function processInline(text) {
   return result
 }
 
+function isBlockStart(line) {
+  if (!line) return false
+  if (line.match(/^#{1,3}\s/)) return true
+  if (line.match(/^\d+\.\s/)) return true
+  if (line.match(/^[-*]\s/)) return true
+  if (line.trimStart().startsWith('```')) return true
+  return false
+}
+
 function parseMarkdown(content) {
   if (!content) return ''
 
@@ -39,7 +48,8 @@ function parseMarkdown(content) {
     }
   }
 
-  for (let i = 0; i < lines.length; i++) {
+  let i = 0
+  while (i < lines.length) {
     const line = lines[i]
 
     // Fenced code blocks
@@ -52,17 +62,20 @@ function parseMarkdown(content) {
         flushList()
         inCodeBlock = true
       }
+      i++
       continue
     }
 
     if (inCodeBlock) {
       codeLines.push(escapeHtml(line))
+      i++
       continue
     }
 
     // Empty line
     if (line.trim() === '') {
       flushList()
+      i++
       continue
     }
 
@@ -70,7 +83,8 @@ function parseMarkdown(content) {
     const h2Match = line.match(/^## (.+)/)
     if (h2Match) {
       flushList()
-      html.push(`<h2 class="md-h2">${escapeHtml(h2Match[1])}</h2>`)
+      html.push(`<h2 class="md-h2">${processInline(h2Match[1])}</h2>`)
+      i++
       continue
     }
 
@@ -78,7 +92,8 @@ function parseMarkdown(content) {
     const h3Match = line.match(/^### (.+)/)
     if (h3Match) {
       flushList()
-      html.push(`<h3 class="md-h3">${escapeHtml(h3Match[1])}</h3>`)
+      html.push(`<h3 class="md-h3">${processInline(h3Match[1])}</h3>`)
+      i++
       continue
     }
 
@@ -90,23 +105,34 @@ function parseMarkdown(content) {
         inList = 'ol'
       }
       listItems.push(olMatch[1])
+      i++
       continue
     }
 
-    // Bullet list: - item or * item
-    const ulMatch = line.match(/^[-*]\s+(.+)/)
+    // Bullet list: - item (but NOT **bold** which starts with *)
+    // Only match * as bullet if it's followed by a space and not another *
+    const ulMatch = line.match(/^[-]\s+(.+)/) || line.match(/^\*(?!\*)[ \t]+(.+)/)
     if (ulMatch) {
       if (inList !== 'ul') {
         flushList()
         inList = 'ul'
       }
       listItems.push(ulMatch[1])
+      i++
       continue
     }
 
-    // Paragraph
+    // Paragraph — collect consecutive non-block, non-empty lines
     flushList()
-    html.push(`<p class="md-p">${processInline(line)}</p>`)
+    const paraLines = [line]
+    i++
+    while (i < lines.length) {
+      const next = lines[i]
+      if (next.trim() === '' || isBlockStart(next)) break
+      paraLines.push(next)
+      i++
+    }
+    html.push(`<p class="md-p">${paraLines.map(processInline).join(' ')}</p>`)
   }
 
   // Flush remaining
