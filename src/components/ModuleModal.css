@@ -159,6 +159,47 @@
   color: var(--text2);
 }
 
+/* Technical digest */
+
+.modal-digest {
+  border: 1px solid var(--border);
+  background: var(--surface2);
+}
+
+.modal-digest-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-align: left;
+}
+
+.modal-digest-toggle:hover {
+  background: var(--amber-glow);
+}
+
+.modal-digest-chevron {
+  font-size: 16px;
+  color: var(--text3);
+}
+
+.modal-digest-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text2);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  padding: 0 16px 16px;
+  margin: 0;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
 /* Actions */
 
 .modal-actions {

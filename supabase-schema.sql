@@ -18,6 +18,7 @@ create table if not exists modules (
   category text,
   personal_notes text,
   delta text,
+  manual_digest text,
   manual_url text,
   hp integer,
   rack_id uuid references racks(id) on delete set null,

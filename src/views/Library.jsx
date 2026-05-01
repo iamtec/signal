@@ -71,28 +71,33 @@ export default function Library() {
       const response = await callAnthropic({
         systemPrompt: DELTA_SYSTEM_PROMPT,
         userPrompt: buildDeltaUserPrompt(mod.name, mod.manufacturer, mod.personal_notes),
-        maxTokens: 1000,
-        maxSearchUses: 3,
+        maxTokens: 2000,
+        maxSearchUses: 5,
       })
 
       let delta = ''
+      let manualDigest = ''
       let manualUrl = ''
       try {
         const jsonMatch = response.match(/\{[\s\S]*\}/)
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0])
           delta = parsed.delta || ''
+          manualDigest = parsed.manual_digest || ''
           manualUrl = parsed.manual_url || ''
         }
       } catch {
         delta = response.trim()
       }
 
-      delta = delta.replace(/<cite[^>]*>|<\/cite>/g, '').replace(/\s{2,}/g, ' ').trim()
+      // Strip any <cite> tags
+      const stripCites = (s) => s.replace(/<cite[^>]*>|<\/cite>/g, '').replace(/\s{2,}/g, ' ').trim()
+      delta = stripCites(delta)
+      manualDigest = stripCites(manualDigest)
 
       await supabase
         .from('modules')
-        .update({ delta, manual_url: manualUrl })
+        .update({ delta, manual_digest: manualDigest, manual_url: manualUrl })
         .eq('id', mod.id)
 
       await fetchAll()

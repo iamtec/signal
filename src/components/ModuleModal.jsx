@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import './ModuleModal.css'
 
 const CATEGORIES = [
@@ -23,6 +23,7 @@ export default function ModuleModal({ module, defaultRackId, defaultIsController
   const [rackId, setRackId] = useState('')
   const [isController, setIsController] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [digestExpanded, setDigestExpanded] = useState(false)
 
   useEffect(() => {
     if (module) {
@@ -164,7 +165,7 @@ export default function ModuleModal({ module, defaultRackId, defaultIsController
             />
           </div>
 
-          {isEdit && module.delta && (
+          {isEdit && (module.delta || module.manual_digest) && (
             <div className="modal-delta">
               <div className="modal-delta-header">
                 <span className="section-header" style={{ marginBottom: 0 }}>
@@ -180,7 +181,9 @@ export default function ModuleModal({ module, defaultRackId, defaultIsController
                   </button>
                 )}
               </div>
-              <p className="modal-delta-text">{module.delta}</p>
+              {module.delta && (
+                <p className="modal-delta-text">{module.delta}</p>
+              )}
               {module.manual_url && (
                 <a
                   className="modal-delta-source"
@@ -194,13 +197,33 @@ export default function ModuleModal({ module, defaultRackId, defaultIsController
             </div>
           )}
 
-          {isEdit && !module.delta && (
+          {isEdit && module.manual_digest && (
+            <div className="modal-digest">
+              <button
+                type="button"
+                className="modal-digest-toggle"
+                onClick={() => setDigestExpanded(!digestExpanded)}
+              >
+                <span className="section-header" style={{ marginBottom: 0 }}>
+                  Technical Reference
+                </span>
+                <span className="modal-digest-chevron">
+                  {digestExpanded ? '−' : '+'}
+                </span>
+              </button>
+              {digestExpanded && (
+                <pre className="modal-digest-text">{module.manual_digest}</pre>
+              )}
+            </div>
+          )}
+
+          {isEdit && !module.delta && !module.manual_digest && (
             <div className="modal-delta modal-delta-pending">
               <span className="section-header" style={{ marginBottom: 0 }}>
                 From the manual — things to explore
               </span>
               <p className="modal-delta-text" style={{ color: 'var(--text3)' }}>
-                Delta not yet extracted. It may still be processing.
+                Not yet extracted. It may still be processing.
               </p>
               {onRegenerateDelta && (
                 <button
