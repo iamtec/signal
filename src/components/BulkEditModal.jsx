@@ -3,11 +3,12 @@ import './BulkEditModal.css'
 
 const CATEGORIES = ['', 'voice', 'sequencer', 'modulation', 'effects', 'processing', 'controller', 'utility']
 
-export default function BulkEditModal({ modules, rackName, onSave, onDelete, onClose }) {
+export default function BulkEditModal({ modules, rackName, onSave, onRegenerateAll, onClose }) {
   // Local editable state for each module
   const [edits, setEdits] = useState({})
   const [toDelete, setToDelete] = useState(new Set())
   const [saving, setSaving] = useState(false)
+  const [confirmRegenAll, setConfirmRegenAll] = useState(false)
 
   useEffect(() => {
     // Initialize edits from module data
@@ -68,6 +69,38 @@ export default function BulkEditModal({ modules, rackName, onSave, onDelete, onC
       setSaving(false)
     }
   }
+
+  const handleRegenerateAll = useCallback(async () => {
+    // Save current edits first
+    setSaving(true)
+    try {
+      const updates = []
+      modules.forEach((m) => {
+        if (toDelete.has(m.id)) return
+        const edit = edits[m.id]
+        if (!edit) return
+        const notesChanged = (edit.personal_notes || '') !== (m.personal_notes || '')
+        const catChanged = (edit.category || '') !== (m.category || '')
+        if (notesChanged || catChanged) {
+          updates.push({
+            id: m.id,
+            personal_notes: edit.personal_notes.trim() || null,
+            category: edit.category || null,
+          })
+        }
+      })
+      const deleteIds = [...toDelete]
+      await onSave(updates, deleteIds)
+    } finally {
+      setSaving(false)
+    }
+
+    // Then trigger regeneration for non-deleted modules
+    const activeList = modules.filter((m) => !toDelete.has(m.id))
+    if (onRegenerateAll && activeList.length > 0) {
+      onRegenerateAll(activeList)
+    }
+  }, [modules, edits, toDelete, onSave, onRegenerateAll])
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -142,12 +175,45 @@ export default function BulkEditModal({ modules, rackName, onSave, onDelete, onC
           </div>
 
           <div className="bulk-edit-footer">
-            <span className="bulk-edit-summary">
-              {activeModules.length} module{activeModules.length !== 1 ? 's' : ''}
-              {deletedCount > 0 && (
-                <span className="bulk-edit-delete-count"> — {deletedCount} to delete</span>
+            <div className="bulk-edit-footer-left">
+              <span className="bulk-edit-summary">
+                {activeModules.length} module{activeModules.length !== 1 ? 's' : ''}
+                {deletedCount > 0 && (
+                  <span className="bulk-edit-delete-count"> — {deletedCount} to delete</span>
+                )}
+              </span>
+              {onRegenerateAll && (
+                confirmRegenAll ? (
+                  <div className="bulk-edit-regen-confirm">
+                    <span className="bulk-edit-regen-confirm-text">Save + regenerate all deltas?</span>
+                    <button
+                      type="button"
+                      className="bulk-edit-regen-yes"
+                      onClick={handleRegenerateAll}
+                      disabled={saving}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      className="bulk-edit-regen-no"
+                      onClick={() => setConfirmRegenAll(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="bulk-edit-regen-btn"
+                    onClick={() => setConfirmRegenAll(true)}
+                    disabled={saving}
+                  >
+                    Regenerate All Deltas
+                  </button>
+                )
               )}
-            </span>
+            </div>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button type="button" className="btn-secondary" onClick={onClose}>
                 Cancel

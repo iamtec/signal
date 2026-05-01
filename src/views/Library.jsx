@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { callAnthropic } from '../lib/anthropic'
-import { DELTA_SYSTEM_PROMPT, buildDeltaUserPrompt } from '../prompts'
+import { DELTA_SYSTEM_PROMPT, buildDeltaUserPrompt, DELTA_ONLY_SYSTEM_PROMPT, buildDeltaOnlyUserPrompt } from '../prompts'
 import ModuleCard from '../components/ModuleCard'
 import ModuleModal from '../components/ModuleModal'
 import RackModal from '../components/RackModal'
@@ -116,6 +116,54 @@ export default function Library() {
       })
     }
   }, [fetchAll])
+
+  // Delta-only regeneration (skips manual_digest if it already exists)
+  const extractDeltaOnly = useCallback(async (mod) => {
+    // If no manual_digest, fall back to full extraction
+    if (!mod.manual_digest) {
+      return extractDelta(mod)
+    }
+
+    setExtractingDelta((prev) => new Set([...prev, mod.id]))
+    try {
+      const response = await callAnthropic({
+        systemPrompt: DELTA_ONLY_SYSTEM_PROMPT,
+        userPrompt: buildDeltaOnlyUserPrompt(mod.name, mod.manufacturer, mod.personal_notes, mod.manual_digest),
+        maxTokens: 800,
+        maxSearchUses: 2,
+      })
+
+      let delta = ''
+      let manualUrl = mod.manual_url || ''
+      try {
+        const jsonMatch = response.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0])
+          delta = parsed.delta || ''
+          if (parsed.manual_url) manualUrl = parsed.manual_url
+        }
+      } catch {
+        delta = response.trim()
+      }
+
+      delta = delta.replace(/<cite[^>]*>|<\/cite>/g, '').replace(/\s{2,}/g, ' ').trim()
+
+      await supabase
+        .from('modules')
+        .update({ delta, manual_url: manualUrl })
+        .eq('id', mod.id)
+
+      await fetchAll()
+    } catch (err) {
+      console.error('Delta-only extraction failed:', err)
+    } finally {
+      setExtractingDelta((prev) => {
+        const next = new Set(prev)
+        next.delete(mod.id)
+        return next
+      })
+    }
+  }, [fetchAll, extractDelta])
 
   // --- Module CRUD ---
 
@@ -322,6 +370,25 @@ export default function Library() {
     setBulkEditModules(mods)
     setBulkEditRackName(rackNameStr || null)
   }, [modules])
+
+  const handleRegenerateAllDeltas = useCallback(async (moduleList) => {
+    // Save first, close modal, then fire extractions
+    setBulkEditModules(null)
+    setBulkEditRackName(null)
+
+    // Re-fetch to get latest notes
+    await fetchAll()
+
+    // Get fresh module data
+    const { data: freshModules } = await supabase
+      .from('modules')
+      .select('*')
+      .in('id', moduleList.map((m) => m.id))
+
+    if (freshModules) {
+      freshModules.forEach((mod) => extractDeltaOnly(mod))
+    }
+  }, [fetchAll, extractDeltaOnly])
 
   // --- Drag and drop ---
 
@@ -628,6 +695,7 @@ export default function Library() {
           modules={bulkEditModules}
           rackName={bulkEditRackName}
           onSave={handleBulkEditSave}
+          onRegenerateAll={handleRegenerateAllDeltas}
           onClose={() => { setBulkEditModules(null); setBulkEditRackName(null) }}
         />
       )}

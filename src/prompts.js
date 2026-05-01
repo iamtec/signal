@@ -45,6 +45,28 @@ ${personalNotes || '(no notes provided)'}
 Search for this module's official manual and documentation. Read it thoroughly, then produce the technical digest and delta.`
 }
 
+// Delta-only regeneration (when manual_digest already exists)
+
+export const DELTA_ONLY_SYSTEM_PROMPT = `You are a Eurorack module researcher. You are given a module's technical reference (already extracted from the manual) and the user's updated personal notes. Compare them and identify things the user didn't mention — hidden modes, lesser-known features, CV routing options, creative use cases.
+
+Return a JSON block with exactly two keys:
+1. "delta" — A concise list of things the user didn't mention, under 150 words. Focus on what's useful and actionable.
+2. "manual_url" — The primary source URL (search for it if needed).
+
+Do NOT include any <cite> tags. Return ONLY the JSON block, no other text.`
+
+export function buildDeltaOnlyUserPrompt(name, manufacturer, personalNotes, manualDigest) {
+  return `Module: ${name} by ${manufacturer}
+
+Technical reference (already extracted):
+${manualDigest}
+
+User's current notes:
+${personalNotes || '(no notes provided)'}
+
+Identify things in the technical reference that the user hasn't mentioned in their notes.`
+}
+
 // --- Reflection generation ---
 
 export const REFLECTION_SYSTEM_PROMPT = `You are SIGNAL, an analytical tool for a modular synthesizer musician. You observe patterns across their entire setup, their lesson history, and their stated interests to produce genuinely useful reflections.
