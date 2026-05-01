@@ -12,7 +12,7 @@ const CATEGORIES = [
   'utility',
 ]
 
-export default function ModuleModal({ module, defaultRackId, defaultIsController, racks = [], onSave, onClose, onRegenerateDelta }) {
+export default function ModuleModal({ module, defaultRackId, defaultIsController, racks = [], onSave, onClose, onDelete, onRegenerateDelta }) {
   const isEdit = !!module
 
   const [name, setName] = useState('')
@@ -24,6 +24,7 @@ export default function ModuleModal({ module, defaultRackId, defaultIsController
   const [isController, setIsController] = useState(false)
   const [saving, setSaving] = useState(false)
   const [digestExpanded, setDigestExpanded] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
     if (module) {
@@ -237,13 +238,46 @@ export default function ModuleModal({ module, defaultRackId, defaultIsController
             </div>
           )}
 
-          <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="btn-primary" disabled={saving || !name.trim() || !manufacturer.trim()}>
-              {saving ? 'Saving...' : isEdit ? 'Update' : (isController ? 'Save Controller' : 'Save Module')}
-            </button>
+          <div className="modal-actions" style={{ justifyContent: 'space-between' }}>
+            <div>
+              {isEdit && onDelete && (
+                confirmDelete ? (
+                  <div className="modal-delete-confirm">
+                    <span className="modal-delete-confirm-text">Delete this module?</span>
+                    <button
+                      type="button"
+                      className="modal-delete-yes"
+                      onClick={() => onDelete(module.id)}
+                    >
+                      Delete
+                    </button>
+                    <button
+                      type="button"
+                      className="modal-delete-no"
+                      onClick={() => setConfirmDelete(false)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="modal-delete-btn"
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    Delete
+                  </button>
+                )
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button type="button" className="btn-secondary" onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className="btn-primary" disabled={saving || !name.trim() || !manufacturer.trim()}>
+                {saving ? 'Saving...' : isEdit ? 'Update' : (isController ? 'Save Controller' : 'Save Module')}
+              </button>
+            </div>
           </div>
         </form>
       </div>

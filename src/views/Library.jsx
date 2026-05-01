@@ -7,6 +7,7 @@ import ModuleModal from '../components/ModuleModal'
 import RackModal from '../components/RackModal'
 import BulkAddModal from '../components/BulkAddModal'
 import ImportRackModal from '../components/ImportRackModal'
+import BulkEditModal from '../components/BulkEditModal'
 import './Library.css'
 
 export default function Library() {
@@ -22,6 +23,8 @@ export default function Library() {
   const [bulkDefaultRack, setBulkDefaultRack] = useState(null)
   const [extractingDelta, setExtractingDelta] = useState(new Set())
   const [importModalOpen, setImportModalOpen] = useState(false)
+  const [bulkEditModules, setBulkEditModules] = useState(null) // array of modules to edit, or null
+  const [bulkEditRackName, setBulkEditRackName] = useState(null)
   const [dragOverRack, setDragOverRack] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -154,6 +157,15 @@ export default function Library() {
     await fetchAll()
   }, [fetchAll, extractDelta])
 
+  const handleDeleteModule = useCallback(async (moduleId) => {
+    const { error } = await supabase.from('modules').delete().eq('id', moduleId)
+    if (error) { console.error('Error deleting module:', error); return }
+    setModalOpen(false)
+    setEditModule(null)
+    setModalDefaults({})
+    await fetchAll()
+  }, [fetchAll])
+
   // --- Bulk add ---
 
   const handleBulkSave = useCallback(async (parsedModules, rackId) => {
@@ -227,6 +239,12 @@ export default function Library() {
     setImportModalOpen(false)
     await fetchAll()
 
+    // Open bulk edit with the newly imported modules
+    if (data && data.length > 0) {
+      setBulkEditModules(data)
+      setBulkEditRackName(rackName)
+    }
+
     // Fire delta extraction for each (async, non-blocking)
     if (data) {
       data.forEach((mod) => extractDelta(mod))
@@ -266,6 +284,44 @@ export default function Library() {
     setEditRack(null)
     await fetchAll()
   }, [fetchAll])
+
+  // --- Bulk edit ---
+
+  const handleBulkEditSave = useCallback(async (updates, deleteIds) => {
+    // Apply updates
+    for (const update of updates) {
+      const { error } = await supabase
+        .from('modules')
+        .update({
+          personal_notes: update.personal_notes,
+          category: update.category,
+        })
+        .eq('id', update.id)
+      if (error) console.error('Error updating module:', error)
+    }
+
+    // Apply deletes
+    if (deleteIds.length > 0) {
+      const { error } = await supabase
+        .from('modules')
+        .delete()
+        .in('id', deleteIds)
+      if (error) console.error('Error deleting modules:', error)
+    }
+
+    setBulkEditModules(null)
+    setBulkEditRackName(null)
+    await fetchAll()
+  }, [fetchAll])
+
+  const handleOpenBulkEdit = useCallback((rackId, rackNameStr) => {
+    const mods = rackId
+      ? modules.filter((m) => m.rack_id === rackId && !m.is_controller)
+      : modules.filter((m) => !m.rack_id && !m.is_controller)
+    if (mods.length === 0) return
+    setBulkEditModules(mods)
+    setBulkEditRackName(rackNameStr || null)
+  }, [modules])
 
   // --- Drag and drop ---
 
@@ -463,6 +519,14 @@ export default function Library() {
                       )}
                     </div>
                     <div className="library-rack-actions">
+                      {rackMods.length > 0 && (
+                        <button
+                          className="library-rack-action"
+                          onClick={() => handleOpenBulkEdit(rack.id, rack.name)}
+                        >
+                          Edit All
+                        </button>
+                      )}
                       <button
                         className="library-rack-action"
                         onClick={() => handleBulkAdd(rack.id)}
@@ -529,6 +593,7 @@ export default function Library() {
           racks={racks}
           onSave={handleSaveModule}
           onClose={handleCloseModal}
+          onDelete={handleDeleteModule}
           onRegenerateDelta={handleRegenerateDelta}
         />
       )}
@@ -555,6 +620,15 @@ export default function Library() {
         <ImportRackModal
           onImport={handleImport}
           onClose={() => setImportModalOpen(false)}
+        />
+      )}
+
+      {bulkEditModules && (
+        <BulkEditModal
+          modules={bulkEditModules}
+          rackName={bulkEditRackName}
+          onSave={handleBulkEditSave}
+          onClose={() => { setBulkEditModules(null); setBulkEditRackName(null) }}
         />
       )}
     </div>
