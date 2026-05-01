@@ -4,6 +4,7 @@ const NAV_ITEMS = [
   { key: 'library', label: 'Library', icon: '◧' },
   { key: 'session', label: 'New Session', icon: '▹' },
   { key: 'saved', label: 'Saved', icon: '≡' },
+  { key: 'profile', label: 'Profile', icon: '◉' },
 ]
 
 export default function Layout({ currentView, onNavigate, children }) {

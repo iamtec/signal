@@ -5,6 +5,7 @@ import Library from './views/Library'
 import NewSession from './views/NewSession'
 import Lesson from './views/Lesson'
 import Saved from './views/Saved'
+import Profile from './views/Profile'
 
 const ROUTES = {
   '/': 'library',
@@ -12,6 +13,7 @@ const ROUTES = {
   '/session': 'session',
   '/lesson': 'lesson',
   '/saved': 'saved',
+  '/profile': 'profile',
 }
 
 function getViewFromPath() {
@@ -23,7 +25,6 @@ function generateTitle(goal, mode) {
   if (goal && goal.trim()) {
     const trimmed = goal.trim()
     if (trimmed.length <= 50) return trimmed
-    // Truncate at word boundary
     const cut = trimmed.slice(0, 50)
     const lastSpace = cut.lastIndexOf(' ')
     return (lastSpace > 20 ? cut.slice(0, lastSpace) : cut) + '...'
@@ -56,11 +57,9 @@ export default function App() {
     setCurrentView(view)
   }, [])
 
-  // Auto-save lesson to Supabase on generation, then show it
   const handleLessonGenerated = useCallback(async (data) => {
     const title = generateTitle(data.goal, data.mode)
 
-    // Insert into Supabase
     const { data: saved, error } = await supabase
       .from('lessons')
       .insert({
@@ -77,7 +76,6 @@ export default function App() {
 
     if (error) {
       console.error('Error auto-saving lesson:', error)
-      // Still show the lesson even if save failed
       setLessonData({ ...data, title, id: null, is_favorite: false })
     } else {
       setLessonData({
@@ -123,6 +121,8 @@ export default function App() {
         )
       case 'saved':
         return <Saved onViewLesson={handleViewSavedLesson} />
+      case 'profile':
+        return <Profile />
       default:
         return <Library />
     }

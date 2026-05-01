@@ -39,10 +39,24 @@ create table if not exists lessons (
   created_at timestamptz default now()
 );
 
+-- Profile table (single row)
+create table if not exists profile (
+  id uuid primary key default gen_random_uuid(),
+  notes text,
+  signal_chains text,
+  reflections text,
+  reflections_updated_at timestamptz,
+  updated_at timestamptz default now()
+);
+
+-- Seed with one empty row
+insert into profile (notes, signal_chains) values ('', '');
+
 -- Enable RLS
 alter table racks enable row level security;
 alter table modules enable row level security;
 alter table lessons enable row level security;
+alter table profile enable row level security;
 
 -- Open policies (single user app)
 create policy "Allow all on racks" on racks
@@ -52,4 +66,7 @@ create policy "Allow all on modules" on modules
   for all using (true) with check (true);
 
 create policy "Allow all on lessons" on lessons
+  for all using (true) with check (true);
+
+create policy "Allow all on profile" on profile
   for all using (true) with check (true);

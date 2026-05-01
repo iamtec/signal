@@ -16,6 +16,7 @@ export default function NewSession({ onLessonGenerated }) {
   const [step, setStep] = useState(1)
   const [modules, setModules] = useState([])
   const [racks, setRacks] = useState([])
+  const [profile, setProfile] = useState(null)
   const [selectedIds, setSelectedIds] = useState([])
   const [mode, setMode] = useState('learn')
   const [styleRef, setStyleRef] = useState('')
@@ -26,12 +27,14 @@ export default function NewSession({ onLessonGenerated }) {
 
   useEffect(() => {
     async function load() {
-      const [modulesRes, racksRes] = await Promise.all([
+      const [modulesRes, racksRes, profileRes] = await Promise.all([
         supabase.from('modules').select('*').order('created_at', { ascending: true }),
         supabase.from('racks').select('*').order('created_at', { ascending: true }),
+        supabase.from('profile').select('*').limit(1).single(),
       ])
       setModules(modulesRes.data || [])
       setRacks(racksRes.data || [])
+      if (profileRes.data) setProfile(profileRes.data)
     }
     load()
   }, [])
@@ -76,6 +79,7 @@ export default function NewSession({ onLessonGenerated }) {
         styleRef,
         goal,
         mode,
+        profile,
       )
 
       const content = await callAnthropic({
