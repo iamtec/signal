@@ -29,6 +29,16 @@
   color: var(--text);
 }
 
+.library-import-btn {
+  color: var(--amber);
+  border-color: var(--amber);
+}
+
+.library-import-btn:hover {
+  background: var(--amber-dim);
+  color: var(--amber);
+}
+
 .library-add-btn {
   font-family: var(--font-mono);
   font-size: 11px;

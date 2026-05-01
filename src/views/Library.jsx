@@ -6,6 +6,7 @@ import ModuleCard from '../components/ModuleCard'
 import ModuleModal from '../components/ModuleModal'
 import RackModal from '../components/RackModal'
 import BulkAddModal from '../components/BulkAddModal'
+import ImportRackModal from '../components/ImportRackModal'
 import './Library.css'
 
 export default function Library() {
@@ -20,6 +21,7 @@ export default function Library() {
   const [bulkModalOpen, setBulkModalOpen] = useState(false)
   const [bulkDefaultRack, setBulkDefaultRack] = useState(null)
   const [extractingDelta, setExtractingDelta] = useState(new Set())
+  const [importModalOpen, setImportModalOpen] = useState(false)
   const [dragOverRack, setDragOverRack] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -183,6 +185,54 @@ export default function Library() {
     }
   }, [fetchAll, extractDelta])
 
+  // --- Import from ModularGrid ---
+
+  const handleImport = useCallback(async ({ rackName, rackDesc, hpCapacity, modules: parsedModules }) => {
+    // 1. Create the rack
+    const { data: rack, error: rackError } = await supabase
+      .from('racks')
+      .insert({
+        name: rackName,
+        description: rackDesc,
+        hp_capacity: hpCapacity,
+      })
+      .select()
+      .single()
+
+    if (rackError) {
+      console.error('Error creating rack:', rackError)
+      return
+    }
+
+    // 2. Insert all modules into this rack
+    const rows = parsedModules.map((m) => ({
+      name: m.name,
+      manufacturer: m.manufacturer,
+      category: m.category,
+      hp: m.hp,
+      rack_id: rack.id,
+      is_controller: false,
+    }))
+
+    const { data, error } = await supabase
+      .from('modules')
+      .insert(rows)
+      .select()
+
+    if (error) {
+      console.error('Error importing modules:', error)
+      return
+    }
+
+    setImportModalOpen(false)
+    await fetchAll()
+
+    // Fire delta extraction for each (async, non-blocking)
+    if (data) {
+      data.forEach((mod) => extractDelta(mod))
+    }
+  }, [fetchAll, extractDelta])
+
   // --- Rack CRUD ---
 
   const handleSaveRack = useCallback(async (rackData) => {
@@ -328,6 +378,9 @@ export default function Library() {
       <div className="library-header">
         <span className="section-header">Your Library</span>
         <div className="library-header-actions">
+          <button className="library-action-btn library-import-btn" onClick={() => setImportModalOpen(true)}>
+            Import Rack
+          </button>
           <button className="library-action-btn" onClick={handleAddRack}>
             + Rack
           </button>
@@ -495,6 +548,13 @@ export default function Library() {
           defaultRackId={bulkDefaultRack}
           onSave={handleBulkSave}
           onClose={() => { setBulkModalOpen(false); setBulkDefaultRack(null) }}
+        />
+      )}
+
+      {importModalOpen && (
+        <ImportRackModal
+          onImport={handleImport}
+          onClose={() => setImportModalOpen(false)}
         />
       )}
     </div>
