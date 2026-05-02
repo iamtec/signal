@@ -39,6 +39,16 @@ create table if not exists lessons (
   created_at timestamptz default now()
 );
 
+-- Explorations table (Ask Signal)
+create table if not exists explorations (
+  id uuid primary key default gen_random_uuid(),
+  prompt text not null,
+  content text,
+  cross_rack boolean not null default false,
+  is_favorite boolean not null default false,
+  created_at timestamptz default now()
+);
+
 -- Profile table (single row)
 create table if not exists profile (
   id uuid primary key default gen_random_uuid(),
@@ -56,6 +66,7 @@ insert into profile (notes, signal_chains) values ('', '');
 alter table racks enable row level security;
 alter table modules enable row level security;
 alter table lessons enable row level security;
+alter table explorations enable row level security;
 alter table profile enable row level security;
 
 -- Open policies (single user app)
@@ -66,6 +77,9 @@ create policy "Allow all on modules" on modules
   for all using (true) with check (true);
 
 create policy "Allow all on lessons" on lessons
+  for all using (true) with check (true);
+
+create policy "Allow all on explorations" on explorations
   for all using (true) with check (true);
 
 create policy "Allow all on profile" on profile

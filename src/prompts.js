@@ -209,3 +209,109 @@ MODE: ${mode}
 
 Please search for any interviews, process discussions, or documented techniques from ${styleRef || 'the referenced artist'} relevant to this goal before generating the lesson.`
 }
+
+// --- Ask Signal (explorations) ---
+
+export const ASK_SIGNAL_SYSTEM_PROMPT = `You are SIGNAL, a modular synthesizer sound design consultant. A musician describes a sound they want to make, and you provide exactly 3 distinct approaches to achieve it using their specific hardware.
+
+CRITICAL RULES:
+- Only suggest patch connections using real, documented I/O points from the TECHNICAL REFERENCE provided for each module.
+- Never invent outputs, inputs, modes, or features that aren't documented.
+- Respect all module limitations (sample times, polyphony, voltage ranges).
+- Each approach should be genuinely different in concept — not just variations of the same patch.
+
+Do NOT include any <cite> tags or source annotations. Write plain text only.
+
+Format your response in clean markdown with this structure:
+
+## APPROACH 1: [Short descriptive name]
+
+**Rack:** [Which rack this uses]
+**Core modules:** [List the 2-4 key modules]
+
+[2-3 paragraphs explaining the concept, why it works for the described sound, and what makes this approach unique]
+
+### Signal Flow
+[Exact patch connections: Output name → Input name, using real I/O from the technical reference]
+
+### Key Settings
+[Specific knob positions, mode selections, parameter values]
+
+### Character
+[One sentence on what this approach sounds like vs the others]
+
+---
+
+## APPROACH 2: [Short descriptive name]
+[Same structure]
+
+---
+
+## APPROACH 3: [Short descriptive name]
+[Same structure]
+
+---
+
+## WHICH TO TRY FIRST
+[2-3 sentences on which approach best matches what they described and why]`
+
+export function buildAskSignalUserPrompt(prompt, modules, racks, profile, crossRack) {
+  const sections = []
+
+  // Profile context
+  if (profile) {
+    const parts = []
+    if (profile.notes) parts.push(`About the user: ${profile.notes}`)
+    if (profile.signal_chains) parts.push(`Default signal chains: ${profile.signal_chains}`)
+    if (parts.length > 0) {
+      sections.push(`USER CONTEXT:\n${parts.join('\n')}`)
+    }
+  }
+
+  // Rack topology with modules
+  const controllers = modules.filter((m) => m.is_controller)
+  const rackModules = modules.filter((m) => !m.is_controller)
+
+  if (controllers.length > 0) {
+    const controllerSection = controllers.map((m) => {
+      const lines = [`- ${m.name} (${m.manufacturer})${m.category ? ' [' + m.category + ']' : ''}`]
+      if (m.manual_digest) lines.push(`  TECHNICAL REFERENCE: ${m.manual_digest}`)
+      if (m.personal_notes) lines.push(`  User notes: ${m.personal_notes}`)
+      return lines.join('\n')
+    }).join('\n')
+    sections.push(`CONTROLLERS & EXTERNAL GEAR:\n${controllerSection}`)
+  }
+
+  racks.forEach((rack) => {
+    const mods = rackModules.filter((m) => m.rack_id === rack.id)
+    if (mods.length === 0) return
+
+    const modSection = mods.map((m) => {
+      const lines = [`- ${m.name} (${m.manufacturer})${m.hp ? ' ' + m.hp + 'hp' : ''}${m.category ? ' [' + m.category + ']' : ''}`]
+      if (m.manual_digest) lines.push(`  TECHNICAL REFERENCE: ${m.manual_digest}`)
+      if (m.personal_notes) lines.push(`  User notes: ${m.personal_notes}`)
+      return lines.join('\n')
+    }).join('\n')
+
+    sections.push(`RACK: ${rack.name}${rack.description ? ' — ' + rack.description : ''}${rack.hp_capacity ? ' (' + rack.hp_capacity + 'hp)' : ''}\n${modSection}`)
+  })
+
+  const unassigned = rackModules.filter((m) => !m.rack_id)
+  if (unassigned.length > 0) {
+    const unSection = unassigned.map((m) => `- ${m.name} (${m.manufacturer})`).join('\n')
+    sections.push(`UNASSIGNED MODULES:\n${unSection}`)
+  }
+
+  // Constraint
+  const constraint = crossRack
+    ? 'CROSS-RACK: You may suggest patches that span multiple racks. Note which connections cross rack boundaries — the user will need to cable between cases.'
+    : 'RACK CONSTRAINT: Each approach must use modules from a SINGLE rack only. Do not suggest patches that require cabling between different racks/cases. Controllers can be used with any rack.'
+
+  sections.push(constraint)
+
+  sections.push(`THE SOUND I WANT TO MAKE:\n${prompt}`)
+
+  sections.push('Provide 3 distinct approaches using my specific modules. Search for any relevant synthesis techniques, artist references, or patch ideas that connect to this sound description before generating the approaches.')
+
+  return sections.join('\n\n---\n\n')
+}

@@ -5,6 +5,7 @@ import Library from './views/Library'
 import NewSession from './views/NewSession'
 import Lesson from './views/Lesson'
 import Saved from './views/Saved'
+import AskSignal from './views/AskSignal'
 import Profile from './views/Profile'
 
 const ROUTES = {
@@ -12,6 +13,7 @@ const ROUTES = {
   '/library': 'library',
   '/session': 'session',
   '/lesson': 'lesson',
+  '/ask': 'ask',
   '/saved': 'saved',
   '/profile': 'profile',
 }
@@ -130,6 +132,8 @@ export default function App() {
             onDelete={handleDeleteLesson}
           />
         )
+      case 'ask':
+        return <AskSignal />
       case 'saved':
         return <Saved onViewLesson={handleViewSavedLesson} />
       case 'profile':

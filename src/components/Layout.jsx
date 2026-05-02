@@ -3,6 +3,7 @@ import './Layout.css'
 const NAV_ITEMS = [
   { key: 'library', label: 'Library', icon: '◧' },
   { key: 'session', label: 'New Session', icon: '▹' },
+  { key: 'ask', label: 'Ask Signal', icon: '◇' },
   { key: 'saved', label: 'Saved', icon: '≡' },
   { key: 'profile', label: 'Profile', icon: '◉' },
 ]
