@@ -18,10 +18,9 @@ export default function AskSignal() {
   const [resultId, setResultId] = useState(null)
   const [isFavorite, setIsFavorite] = useState(false)
 
-  // Past explorations
   const [explorations, setExplorations] = useState([])
   const [loadingHistory, setLoadingHistory] = useState(true)
-  const [expanded, setExpanded] = useState(new Set())
+  const [expanded, setExpanded] = useState(null) // single ID or null
   const [confirming, setConfirming] = useState(null)
 
   const fetchExplorations = useCallback(async () => {
@@ -47,7 +46,6 @@ export default function AskSignal() {
     setStatusMsg('Thinking about your sound...')
 
     try {
-      // Fetch all context
       const [modulesRes, racksRes, profileRes] = await Promise.all([
         supabase.from('modules').select('*').order('created_at', { ascending: true }),
         supabase.from('racks').select('*').order('created_at', { ascending: true }),
@@ -70,10 +68,8 @@ export default function AskSignal() {
         onStatus: setStatusMsg,
       })
 
-      // Strip cite tags, preserve newlines
       const cleaned = content.replace(/<cite[^>]*>|<\/cite>/g, '').replace(/[^\S\n]{2,}/g, ' ').trim()
 
-      // Auto-save
       const { data: saved, error: saveErr } = await supabase
         .from('explorations')
         .insert({
@@ -85,9 +81,7 @@ export default function AskSignal() {
         .select()
         .single()
 
-      if (saveErr) {
-        console.error('Error saving exploration:', saveErr)
-      }
+      if (saveErr) console.error('Error saving exploration:', saveErr)
 
       setResult(cleaned)
       setResultId(saved?.id || null)
@@ -106,7 +100,6 @@ export default function AskSignal() {
     const current = id === resultId ? isFavorite : (exploration?.is_favorite || false)
     const newVal = !current
 
-    // Optimistic
     if (id === resultId) setIsFavorite(newVal)
     setExplorations((prev) =>
       prev.map((e) => e.id === id ? { ...e, is_favorite: newVal } : e)
@@ -129,20 +122,13 @@ export default function AskSignal() {
     const { error } = await supabase.from('explorations').delete().eq('id', id)
     if (error) { console.error('Error deleting exploration:', error); return }
     setConfirming(null)
+    setExpanded(null)
     setExplorations((prev) => prev.filter((e) => e.id !== id))
-    if (id === resultId) {
-      setResult(null)
-      setResultId(null)
-    }
+    if (id === resultId) { setResult(null); setResultId(null) }
   }, [resultId])
 
   const toggleExpand = useCallback((id) => {
-    setExpanded((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+    setExpanded((prev) => prev === id ? null : id)
   }, [])
 
   const loadExploration = useCallback((exploration) => {
@@ -151,11 +137,71 @@ export default function AskSignal() {
     setIsFavorite(exploration.is_favorite)
     setPrompt(exploration.prompt)
     setCrossRack(exploration.cross_rack)
+    setExpanded(null)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [])
 
-  const favorites = explorations.filter((e) => e.is_favorite)
-  const history = explorations.filter((e) => !e.is_favorite)
+  const favExplorations = explorations.filter((e) => e.is_favorite)
+  const histExplorations = explorations.filter((e) => !e.is_favorite)
+  const expandedExploration = expanded ? explorations.find((e) => e.id === expanded) : null
+
+  function renderDeleteButton(id) {
+    if (confirming === id) {
+      return (
+        <div className="ask-signal-confirm">
+          <span className="ask-signal-confirm-text">Delete?</span>
+          <button className="ask-signal-confirm-yes" onClick={() => handleDelete(id)}>Yes</button>
+          <button className="ask-signal-confirm-no" onClick={() => setConfirming(null)}>Cancel</button>
+        </div>
+      )
+    }
+    return (
+      <button className="ask-signal-delete-btn" onClick={() => setConfirming(id)}>Delete</button>
+    )
+  }
+
+  function renderCard(ex) {
+    const isExpanded = expanded === ex.id
+    const date = new Date(ex.created_at).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric',
+    })
+
+    return (
+      <div key={ex.id} className={`ask-signal-card ${isExpanded ? 'is-expanded' : ''}`}>
+        <div className="ask-signal-card-header">
+          <button
+            className="ask-signal-card-main"
+            onClick={() => toggleExpand(ex.id)}
+          >
+            <span className="ask-signal-card-prompt">{ex.prompt}</span>
+            <div className="ask-signal-card-meta">
+              {ex.cross_rack && <span className="pill">cross-rack</span>}
+              <span className="ask-signal-card-date">{date}</span>
+            </div>
+          </button>
+          <button
+            className={`ask-signal-fav-btn ${ex.is_favorite ? 'active' : ''}`}
+            onClick={() => toggleFavorite(ex.id)}
+          >
+            {ex.is_favorite ? '★' : '☆'}
+          </button>
+        </div>
+
+        {/* Desktop inline expand */}
+        {isExpanded && (
+          <div className="ask-signal-card-body ask-signal-card-body-desktop">
+            <div className="ask-signal-card-content">
+              <Markdown content={ex.content} />
+            </div>
+            <div className="ask-signal-card-actions">
+              <button className="btn-secondary" onClick={() => loadExploration(ex)}>Load</button>
+              {renderDeleteButton(ex.id)}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="ask-signal">
@@ -168,7 +214,7 @@ export default function AskSignal() {
             className="ask-signal-textarea"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="e.g. A slow, breathing bass texture that pulses like a heartbeat with subtle metallic overtones that shimmer on the off-beats. Dark but not aggressive — more like something you'd hear in a Burial interlude."
+            placeholder="e.g. A slow, breathing bass texture that pulses like a heartbeat with subtle metallic overtones that shimmer on the off-beats."
             rows={4}
           />
         </div>
@@ -194,9 +240,7 @@ export default function AskSignal() {
         </div>
       </div>
 
-      {error && (
-        <div className="ask-signal-error">{error}</div>
-      )}
+      {error && <div className="ask-signal-error">{error}</div>}
 
       {result && (
         <div className="ask-signal-result">
@@ -220,92 +264,55 @@ export default function AskSignal() {
         </div>
       )}
 
-      {/* History */}
       {!loadingHistory && explorations.length > 0 && (
         <div className="ask-signal-history">
           <span className="section-header" style={{ marginTop: '40px' }}>Past Explorations</span>
 
-          {favorites.length > 0 && (
+          {favExplorations.length > 0 && (
             <div className="ask-signal-history-section">
               <span className="ask-signal-history-label">Favorites</span>
-              <div className="ask-signal-history-list">
-                {favorites.map((ex) => renderCard(ex))}
-              </div>
+              <div className="ask-signal-history-list">{favExplorations.map(renderCard)}</div>
             </div>
           )}
 
-          {history.length > 0 && (
+          {histExplorations.length > 0 && (
             <div className="ask-signal-history-section">
-              {favorites.length > 0 && (
-                <span className="ask-signal-history-label">History</span>
-              )}
-              <div className="ask-signal-history-list">
-                {history.map((ex) => renderCard(ex))}
-              </div>
+              {favExplorations.length > 0 && <span className="ask-signal-history-label">History</span>}
+              <div className="ask-signal-history-list">{histExplorations.map(renderCard)}</div>
             </div>
           )}
         </div>
       )}
-    </div>
-  )
 
-  function renderCard(ex) {
-    const isExpanded = expanded.has(ex.id)
-    const date = new Date(ex.created_at).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'short', day: 'numeric',
-    })
-
-    return (
-      <div key={ex.id} className="ask-signal-card">
-        <div className="ask-signal-card-header">
-          <button
-            className="ask-signal-card-main"
-            onClick={() => toggleExpand(ex.id)}
-          >
-            <span className="ask-signal-card-prompt">{ex.prompt}</span>
-            <div className="ask-signal-card-meta">
-              {ex.cross_rack && <span className="pill">cross-rack</span>}
-              <span className="ask-signal-card-date">{date}</span>
+      {/* Mobile full-screen overlay */}
+      {expandedExploration && (
+        <div className="ask-signal-mobile-overlay">
+          <div className="ask-signal-mobile-overlay-header">
+            <div className="ask-signal-mobile-overlay-meta">
+              <span className="ask-signal-mobile-overlay-prompt">{expandedExploration.prompt}</span>
+              {expandedExploration.cross_rack && <span className="pill">cross-rack</span>}
             </div>
-          </button>
-          <button
-            className={`ask-signal-fav-btn ${ex.is_favorite ? 'active' : ''}`}
-            onClick={() => toggleFavorite(ex.id)}
-          >
-            {ex.is_favorite ? '★' : '☆'}
-          </button>
-        </div>
-
-        {isExpanded && (
-          <div className="ask-signal-card-body">
-            <div className="ask-signal-card-content">
-              <Markdown content={ex.content} />
-            </div>
-            <div className="ask-signal-card-actions">
+            <div className="ask-signal-mobile-overlay-actions">
               <button
-                className="btn-secondary"
-                onClick={() => loadExploration(ex)}
+                className={`ask-signal-fav-btn ${expandedExploration.is_favorite ? 'active' : ''}`}
+                onClick={() => toggleFavorite(expandedExploration.id)}
               >
-                Load
+                {expandedExploration.is_favorite ? '★' : '☆'}
               </button>
-              {confirming === ex.id ? (
-                <div className="ask-signal-confirm">
-                  <span className="ask-signal-confirm-text">Delete?</span>
-                  <button className="ask-signal-confirm-yes" onClick={() => handleDelete(ex.id)}>Yes</button>
-                  <button className="ask-signal-confirm-no" onClick={() => setConfirming(null)}>Cancel</button>
-                </div>
-              ) : (
-                <button
-                  className="ask-signal-delete-btn"
-                  onClick={() => setConfirming(ex.id)}
-                >
-                  Delete
-                </button>
-              )}
+              <button className="ask-signal-mobile-close" onClick={() => setExpanded(null)}>
+                &times;
+              </button>
             </div>
           </div>
-        )}
-      </div>
-    )
-  }
+          <div className="ask-signal-mobile-overlay-content">
+            <Markdown content={expandedExploration.content} />
+          </div>
+          <div className="ask-signal-mobile-overlay-footer">
+            <button className="btn-secondary" onClick={() => loadExploration(expandedExploration)}>Load</button>
+            {renderDeleteButton(expandedExploration.id)}
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
