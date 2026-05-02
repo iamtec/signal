@@ -187,6 +187,11 @@
 
 @media (max-width: 768px) {
   .session-module-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .session-rack-groups {
+    gap: 16px;
   }
 }

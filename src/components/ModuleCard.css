@@ -129,3 +129,51 @@
   font-size: 6px;
   color: var(--amber);
 }
+
+@media (max-width: 768px) {
+  .module-card {
+    padding: 10px 12px;
+    gap: 3px;
+  }
+
+  .module-card-name {
+    font-size: 13px;
+  }
+
+  .module-card-mfr {
+    font-size: 10px;
+  }
+
+  .module-card-notes {
+    display: none;
+  }
+
+  .module-card-cat {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+
+  .module-card-hp {
+    font-size: 9px;
+  }
+
+  .module-card-ext-tag {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+
+  .module-card-check {
+    top: 6px;
+    right: 8px;
+    font-size: 12px;
+  }
+
+  .module-card-delta-indicator {
+    bottom: 6px;
+    right: 8px;
+  }
+
+  .module-card-grip {
+    display: none;
+  }
+}

@@ -124,7 +124,20 @@
     display: flex;
   }
 
+  .bottom-tab {
+    padding: 8px 0 6px;
+  }
+
+  .bottom-tab-icon {
+    font-size: 16px;
+  }
+
+  .bottom-tab-label {
+    font-size: 7px;
+    letter-spacing: 0.05em;
+  }
+
   .main-content {
-    padding: 20px 16px 80px;
+    padding: 16px 12px 72px;
   }
 }

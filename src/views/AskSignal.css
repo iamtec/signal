@@ -296,8 +296,68 @@
 }
 
 @media (max-width: 768px) {
+  .ask-signal-input-area {
+    gap: 12px;
+    margin-top: 12px;
+    margin-bottom: 16px;
+  }
+
+  .ask-signal-textarea {
+    font-size: 13px;
+    min-height: 70px;
+  }
+
   .ask-signal-options {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
+  }
+
+  .ask-signal-crossrack {
+    padding: 7px 12px;
+    font-size: 10px;
+  }
+
+  .ask-signal-result-header {
+    padding: 12px 14px;
+  }
+
+  .ask-signal-result-prompt {
+    font-size: 13px;
+  }
+
+  .ask-signal-result-content {
+    padding: 16px;
+  }
+
+  .ask-signal-card-main {
+    padding: 10px 0 10px 12px;
+    gap: 4px;
+  }
+
+  .ask-signal-card-prompt {
+    font-size: 12px;
+  }
+
+  .ask-signal-card-body {
+    padding: 14px;
+  }
+
+  .ask-signal-card-content {
+    max-height: 300px;
+    margin-bottom: 12px;
+  }
+
+  .ask-signal-fav-btn {
+    padding: 10px 10px 10px 6px;
+    font-size: 16px;
+  }
+
+  .ask-signal-history-list {
+    gap: 4px;
+  }
+
+  .ask-signal-history {
+    gap: 12px;
   }
 }

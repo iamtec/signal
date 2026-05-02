@@ -238,3 +238,53 @@
 .saved-confirm-no:hover {
   color: var(--text2);
 }
+
+@media (max-width: 768px) {
+  .saved-sections {
+    gap: 20px;
+    margin-top: 12px;
+  }
+
+  .saved-list {
+    gap: 6px;
+  }
+
+  .saved-card-header-main {
+    padding: 12px 0 12px 14px;
+    gap: 5px;
+  }
+
+  .saved-card-title {
+    font-size: 13px;
+  }
+
+  .saved-card-meta {
+    gap: 6px;
+  }
+
+  .saved-card-ref {
+    font-size: 12px;
+  }
+
+  .saved-card-date {
+    font-size: 10px;
+  }
+
+  .saved-card-modules {
+    display: none;
+  }
+
+  .saved-fav-btn {
+    padding: 12px 12px 12px 6px;
+    font-size: 16px;
+  }
+
+  .saved-card-body {
+    padding: 14px;
+  }
+
+  .saved-card-content {
+    max-height: 300px;
+    margin-bottom: 12px;
+  }
+}
